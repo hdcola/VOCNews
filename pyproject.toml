@@ -1,0 +1,20 @@
+[project]
+name = "VOCNews"
+version = "0.1.0"
+description = "Default template for PDM package"
+authors = [
+    {name = "hdcola", email = "gh@hdcola.org"},
+]
+dependencies = ["doppler-env>=0.3.1"]
+requires-python = "==3.12.*"
+readme = "README.md"
+license = {text = "GPL-3.0-only"}
+
+
+[tool.pdm]
+distribution = false
+
+[dependency-groups]
+test = [
+    "pytest>=8.3.3",
+]

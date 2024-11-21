@@ -1,6 +1,8 @@
+import os
 import argparse
 import logging
 import utils as ut
+import doppler_env
 
 
 def setup_parser() -> None:
@@ -27,6 +29,10 @@ def setup_parser() -> None:
             ut.DEBUG = v
         elif k != "version":
             ut.PATH[k] = v
+
+    # put the environment variables in the PATH
+    for k, v in os.environ.items():
+        ut.PATH[k] = v
 
 
 if __name__ == "__main__":
