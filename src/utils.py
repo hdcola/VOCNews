@@ -1,2 +1,3 @@
 
 PATH = {}
+DEBUG = False

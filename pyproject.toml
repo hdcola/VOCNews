@@ -10,6 +10,9 @@ requires-python = "==3.12.*"
 readme = "README.md"
 license = {text = "GPL-3.0-only"}
 
+[tool.pdm.scripts]
+export = "pdm export -o requirements.txt"
+feedrss = "python src/feedrss.py"
 
 [tool.pdm]
 distribution = false

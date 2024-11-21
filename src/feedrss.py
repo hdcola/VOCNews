@@ -32,7 +32,15 @@ def setup_parser() -> None:
 
     # put the environment variables in the PATH
     for k, v in os.environ.items():
+        if k == "DEBUG":
+            ut.DEBUG = v
         ut.PATH[k] = v
+
+    if ut.DEBUG:
+        # set looging level to debug
+        logging.getLogger().setLevel(logging.DEBUG)
+
+    logging.debug(f"PATH: {ut.PATH}")
 
 
 if __name__ == "__main__":
