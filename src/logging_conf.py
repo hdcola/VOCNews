@@ -26,11 +26,9 @@ def set_debug(debug: bool) -> None:
     if debug:
         logger.setLevel(logging.DEBUG)
         rich_handler.setLevel(logging.DEBUG)
-        print("Debug mode")
     else:
         logger.setLevel(logging.INFO)
         rich_handler.setLevel(logging.INFO)
-        print("Info mode")
 
 
 class PackageFilter(logging.Filter):
