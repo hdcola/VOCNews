@@ -4,9 +4,9 @@ from logging_conf import logger
 
 log = logger.getChild(__name__)
 
-base_url = ut.ENV["AI_URL"]
-api_key = ut.ENV["AI_TOKEN"]
-model = ut.ENV["AI_MODEL"]
+base_url = ut.ENV.get('AI_URL', '')
+api_key = ut.ENV.get('AI_TOKEN', '')
+model = ut.ENV.get('AI_MODEL', '')
 
 client = OpenAI(base_url=base_url, api_key=api_key)
 
