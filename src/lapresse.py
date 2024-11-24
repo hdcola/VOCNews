@@ -109,6 +109,19 @@ def create_telegraph_page(title, html_content):
 def prepare_telegraph_content(html_content):
     soup = BeautifulSoup(html_content, 'lxml')
 
+    #  remove div class="badgeCollection"
+    for div in soup.find_all('div', class_="badgeCollection"):
+        div.decompose()
+    for div in soup.find_all('div', class_="author"):
+        div.decompose()
+
+    # remove <header> <h1></h1> </header>
+    header = soup.find('header')
+    if header:
+        h1 = header.find('h1')
+        if h1:
+            h1.decompose()
+
     # remove elements but keep content
     for element in soup.find_all(['div', 'section', 'article', 'header', 'small', 'source', 'time']):
         element.unwrap()
@@ -116,6 +129,10 @@ def prepare_telegraph_content(html_content):
     # replace h1 to h3
     for h1 in soup.find_all('h1'):
         h1.name = 'h3'
+
+    # replace h2 to h4
+    for h2 in soup.find_all('h2'):
+        h2.name = 'h4'
 
     # replace span to b
     for span in soup.find_all('span'):
@@ -159,4 +176,4 @@ if __name__ == "__main__":
     title = translate_text(
         entry["title"], source_lang="French", target_lang="Simple Chinese")
     ut.dump_file(translated_text, "translated_telegraph.html")
-    # url = create_telegraph_page(title, translated_text)
+    url = create_telegraph_page(title, translated_text)
