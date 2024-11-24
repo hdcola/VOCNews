@@ -1,8 +1,8 @@
-import os
 import argparse
-import logging
 import utils as ut
-import doppler_env
+from logging_conf import logger
+
+log = logger.getChild(__name__)
 
 
 def setup_parser() -> None:
@@ -22,31 +22,18 @@ def setup_parser() -> None:
         required=False
     )
     args = parser.parse_args()
-    logging.info(f"start feedrss with args: {args}")
+    log.debug(f"start feedrss with args: {args}")
 
     for k, v in vars(args).items():
-        if k == "debug":
-            ut.DEBUG = v
-        elif k != "version":
-            ut.PATH[k] = v
-
-    # put the environment variables in the PATH
-    for k, v in os.environ.items():
-        if k == "DEBUG":
-            ut.DEBUG = v
-        ut.PATH[k] = v
-
-    if ut.DEBUG:
-        # set looging level to debug
-        logging.getLogger().setLevel(logging.DEBUG)
-
-    logging.debug(f"PATH: {ut.PATH}")
+        if k != "version":
+            ut.ENV[k] = v
 
 
 if __name__ == "__main__":
-    logging.basicConfig(
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        level=logging.INFO
-    )
-
     setup_parser()
+
+    import lapresse
+    import mdb
+
+    lapresse.fetch_rss()
+    mdb.insert_one(lapresse.rss)
