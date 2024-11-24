@@ -6,11 +6,16 @@ from logging_conf import logger
 from bs4 import BeautifulSoup
 from lxml.html.clean import Cleaner
 from lxml import html
+from telegraph import Telegraph
+from translate import translate_text
 
 log = logger.getChild(__name__)
 
 name = "lapresse"
 rss_url = "https://www.lapresse.ca/actualites/rss"
+telegraph_token = ut.ENV.get("TELEGRAPH_TOKEN", "")
+
+telegraph = Telegraph(access_token=telegraph_token)
 
 rss = {
     "name": name,
@@ -82,11 +87,54 @@ def get_readability(content):
         noscript.getparent().remove(noscript)
 
     content = html.tostring(cleaned_html).decode('utf-8')
-    return content
+    soup = BeautifulSoup(content, 'lxml')
+    return soup.prettify()
 
 
 def dump_rss(file):
     ut.dump_json(rss, file)
+
+
+def create_telegraph_page(title, html_content):
+    body = prepare_telegraph_content(html_content)
+
+    response = telegraph.create_page(
+        title=title,
+        html_content=body
+    )
+    log.debug(f"telegraph.create_page {response['url']}")
+    return response["url"]
+
+
+def prepare_telegraph_content(html_content):
+    soup = BeautifulSoup(html_content, 'lxml')
+
+    # remove elements but keep content
+    for element in soup.find_all(['div', 'section', 'article', 'header', 'small', 'source', 'time']):
+        element.unwrap()
+
+    # replace h1 to h3
+    for h1 in soup.find_all('h1'):
+        h1.name = 'h3'
+
+    # replace span to b
+    for span in soup.find_all('span'):
+        span.name = 'b'
+
+    return soup.body.decode_contents()
+
+
+def translate_content(content):
+    soup = BeautifulSoup(content, 'lxml')
+    # translate all text content
+    for text_node in soup.find_all(string=True):
+        original_text = text_node.strip()
+        if original_text:
+            translated_text = translate_text(
+                original_text, source_lang="French", target_lang="Simple Chinese")
+            log.debug(f"Translated: {original_text} -> {translated_text}")
+            text_node.replace_with(translated_text)
+    return soup.prettify()
 
 
 if __name__ == "__main__":
@@ -99,7 +147,16 @@ if __name__ == "__main__":
     #     ut.dump_file(content, "lapresse.html")
     # print("done")
 
-    # read lapresse.html to get content
-    content = ut.read_file("lapresse.html")
+    rss = ut.load_json("lapresse.json")
+    entry = rss["entries"][0]
+    content = get_entry_content(entry)
+    ut.dump_file(content, "lapresse.html")
     text = get_readability(content)
     ut.dump_file(text, "parsed_lapresse.html")
+    telegraph_content = prepare_telegraph_content(text)
+    ut.dump_file(telegraph_content, "telegraph.html")
+    translated_text = translate_content(telegraph_content)
+    title = translate_text(
+        entry["title"], source_lang="French", target_lang="Simple Chinese")
+    ut.dump_file(translated_text, "translated_telegraph.html")
+    # url = create_telegraph_page(title, translated_text)

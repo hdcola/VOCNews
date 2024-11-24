@@ -20,6 +20,11 @@ def dump_json(data: dict, file: str) -> None:
         json.dump(data, f, indent=2)
 
 
+def load_json(file: str) -> dict:
+    with open(file, "r") as f:
+        return json.load(f)
+
+
 def dump_file(data: str, file: str) -> None:
     with open(file, "w") as f:
         f.write(data)
