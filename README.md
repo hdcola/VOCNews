@@ -7,16 +7,31 @@ This project will complete a news site like this one for Chinese people, it will
 ## Technologies used
 
 - Front end: Gatsby, React, Tailwindcss
-- Back end: Python, Ollama, Nodejs
-- Cloud service: Cloudflare Pages, Cloudflare Images, Cloudflare Function, Doppler, MongoDB
-- CI: GitHub workflow, pyunit, React Testing Library, jest
+  - Telegram: Share news to the Telegram channel
+  - Telegram Bot: Monitor the operation of the system
+- Back end: Nodejs
+  - Python: News crawling, content analysis, translation, publishing
+- Cloud service: Cloudflare Pages, Cloudflare Images, Cloudflare Function
+  - MongoDB: Store news list
+  - Doppler: Store environment variables and secrets
+  - OpenAI or Ollama: use GPT 3.5 or QWen2 7b to translate news content
+  - Telegraph: Publish news content
+- CI/CD: React Testing Library, jest
+  - pytest: Test the Python code 
+  - GitHub Actions: CI
 
 ## Special features
 
-- Share to social media can be friendly to display content
-- Automatic posting to websites and Telegram channels
-- Fully automated updating and operation
-- Telegram Bot allows you to monitor the operation of your system
+- [x] Get news list from RSS
+- [x] Store news list to MongoDB and get updated news list
+- [x] Analyzing news content and extracting reading views through crawlers
+- [x] Translate news content into Chinese with OpenAI or Ollama's local LLM
+- [x] Convert HTML to Telegraph format and publish to Telegraph
+- [ ] Publish news to the Telegram channel
+- [ ] Fully automated updating and operation
+- [ ] Share to social media can be friendly to display content
+- [ ] Automatic posting to websites and Telegram channels
+- [ ] Telegram Bot allows you to monitor the operation of your system
 
 ## Use Case
 
