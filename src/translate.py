@@ -4,16 +4,30 @@ from logging_conf import logger
 
 log = logger.getChild(__name__)
 
+# Initialize OpenAI configuration
 base_url = ut.ENV.get('AI_URL', '')
 api_key = ut.ENV.get('AI_TOKEN', '')
 model = ut.ENV.get('AI_MODEL', '')
 
-client = OpenAI(base_url=base_url, api_key=api_key)
+try:
+    client = OpenAI(base_url=base_url, api_key=api_key)
+except Exception as e:
+    log.error(f"Failed to initialize OpenAI client: {e}")
+    raise
 
 system_prompt = ut.ENV.get("SYSTEM_PROMPT", None)
 
 
-def default_system_prompt(source_lang=None, target_lang="English"):
+def default_system_prompt(source_lang=None, target_lang="English") -> str:
+    """Generate default system prompt for translation.
+
+    Args:
+        source_lang (str, optional): Source language. Defaults to None.
+        target_lang (str, optional): Target language. Defaults to "English".
+
+    Returns:
+        str: Formatted system prompt for translation
+    """
     return " ".join([
         "You are a professional translator.",
         f"please translate the following into {target_lang}," if not source_lang or source_lang.lower() == "auto"
@@ -23,23 +37,49 @@ def default_system_prompt(source_lang=None, target_lang="English"):
     ])
 
 
-def get_system_prompt(source_lang=None, target_lang="English"):
+def get_system_prompt(source_lang=None, target_lang="English") -> str:
+    """Get system prompt for translation, using custom prompt if available.
+
+    Args:
+        source_lang (str, optional): Source language. Defaults to None.
+        target_lang (str, optional): Target language. Defaults to "English".
+
+    Returns:
+        str: System prompt to use for translation
+    """
     if system_prompt:
         return system_prompt.replace("{source_lang}", source_lang).replace("{target_lang}", target_lang)
     return default_system_prompt(source_lang, target_lang)
 
 
-def translate_text(text, source_lang=None, target_lang="English"):
-    completion = client.chat.completions.create(
-        model=model,
-        temperature=0,
-        messages=[
-            {"role": "system", "content": get_system_prompt(
-                source_lang, target_lang)},
-            {"role": "user", "content": text}
-        ]
-    )
-    return completion.choices[0].message.content
+def translate_text(text: str, source_lang=None, target_lang="English") -> str:
+    """Translate text using OpenAI API.
+
+    Args:
+        text (str): Text to translate
+        source_lang (str, optional): Source language. Defaults to None.
+        target_lang (str, optional): Target language. Defaults to "English".
+
+    Returns:
+        str: Translated text
+
+    Raises:
+        Exception: If translation fails
+    """
+    try:
+        completion = client.chat.completions.create(
+            model=model,
+            temperature=0,
+            messages=[
+                {"role": "system", "content": get_system_prompt(
+                    source_lang, target_lang)},
+                {"role": "user", "content": text}
+            ]
+        )
+        return completion.choices[0].message.content
+    except Exception as e:
+        log.error(f"Translation failed: {e}")
+        raise
 
 
 if __name__ == "__main__":

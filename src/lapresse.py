@@ -1,3 +1,4 @@
+from typing import Optional, Dict, List
 import feedparser
 import utils as ut
 import requests
@@ -11,25 +12,30 @@ from translate import translate_text
 
 log = logger.getChild(__name__)
 
-name = "lapresse"
-rss_url = "https://www.lapresse.ca/actualites/rss"
-telegraph_token = ut.ENV.get("TELEGRAPH_TOKEN", "")
+# Constants
+NAME = "lapresse"
+RSS_URL = "https://www.lapresse.ca/actualites/rss"
+TELEGRAPH_TOKEN = ut.ENV.get("TELEGRAPH_TOKEN", "")
+DATE_FORMAT = "%a, %d %b %Y %H:%M:%S %z"
 
-telegraph = Telegraph(access_token=telegraph_token)
+telegraph = Telegraph(access_token=TELEGRAPH_TOKEN)
 
 rss = {
-    "name": name,
-    "url": rss_url,
+    "name": NAME,
+    "url": RSS_URL,
     "entries": []
 }
 
 
-def fetch_rss():
-    feed = feedparser.parse(rss_url)
+def fetch_rss() -> None:
+    """
+    Fetches RSS feed entries from LaPresse and stores them in the rss dictionary.
+    Each entry contains title, published date, summary, link and image.
+    """
+    feed = feedparser.parse(RSS_URL)
     for entry in feed.entries:
         # "Sat, 23 Nov 2024 14:13:45 -0500" to datatime
-        time_format = "%a, %d %b %Y %H:%M:%S %z"
-        published = datetime.strptime(entry.published, time_format).isoformat()
+        published = datetime.strptime(entry.published, DATE_FORMAT).isoformat()
 
         rss["entries"].append({
             "title": entry.title,
@@ -40,30 +46,57 @@ def fetch_rss():
         })
 
 
-def get_last_entries():
+def get_last_entries() -> Optional[Dict]:
+    """
+    Returns the most recent entry from the RSS feed.
+    Returns None if no entries exist.
+    """
     if len(rss["entries"]) == 0:
         return None
     rss["entries"].sort(key=lambda x: x["published"], reverse=False)
     return rss["entries"][-1]
 
 
-def get_entry_content(entry):
+def get_entry_content(entry: Dict) -> Optional[str]:
+    """
+    Retrieves the full content of an article from its entry URL.
+    Args:
+        entry: RSS feed entry containing the article link
+    Returns:
+        str: HTML content of the article or None if retrieval fails
+    """
     url = entry.get("link", None)
     if not url:
         return None
     return get_content(url)
 
 
-def get_content(url):
-    response = requests.get(url)
-    log.debug(f"GET {url} {response.status_code}")
-    if response.status_code != 200:
+def get_content(url: str) -> Optional[str]:
+    """
+    Fetches content from a given URL using requests.
+    Args:
+        url: The URL to fetch content from
+    Returns:
+        str: The response content or None if request fails
+    """
+    try:
+        response = requests.get(url, timeout=10)  # Add timeout
+        log.debug(f"GET {url} {response.status_code}")
+        response.raise_for_status()
+        return response.text
+    except requests.RequestException as e:
+        log.error(f"Failed to fetch content: {e}")
         return None
-    content = response.text
-    return content
 
 
-def get_readability(content):
+def get_readability(content: str) -> str:
+    """
+    Cleans HTML content by removing unwanted elements and formatting.
+    Args:
+        content: Raw HTML content
+    Returns:
+        str: Cleaned HTML content
+    """
     cleaner = Cleaner(
         scripts=True,
         javascript=True,
@@ -91,11 +124,15 @@ def get_readability(content):
     return soup.prettify()
 
 
-def dump_rss(file):
-    ut.dump_json(rss, file)
-
-
-def create_telegraph_page(title, html_content):
+def create_telegraph_page(title: str, html_content: str) -> str:
+    """
+    Creates a Telegraph page with the given title and content.
+    Args:
+        title: Page title
+        html_content: HTML content for the page
+    Returns:
+        str: URL of the created Telegraph page
+    """
     body = prepare_telegraph_content(html_content)
 
     response = telegraph.create_page(
@@ -106,7 +143,14 @@ def create_telegraph_page(title, html_content):
     return response["url"]
 
 
-def prepare_telegraph_content(html_content):
+def prepare_telegraph_content(html_content: str) -> str:
+    """
+    Prepares HTML content for Telegraph by cleaning and reformatting elements.
+    Args:
+        html_content: HTML content to prepare
+    Returns:
+        str: Prepared HTML content
+    """
     soup = BeautifulSoup(html_content, 'lxml')
 
     #  remove div class="badgeCollection"
@@ -141,39 +185,51 @@ def prepare_telegraph_content(html_content):
     return soup.body.decode_contents()
 
 
-def translate_content(content):
-    soup = BeautifulSoup(content, 'lxml')
-    # translate all text content
-    for text_node in soup.find_all(string=True):
-        original_text = text_node.strip()
-        if original_text:
-            translated_text = translate_text(
-                original_text, source_lang="French", target_lang="Simple Chinese")
-            log.debug(f"Translated: {original_text} -> {translated_text}")
-            text_node.replace_with(translated_text)
-    return soup.prettify()
+def translate_content(content: str) -> str:
+    """
+    Translates text content from French to Simple Chinese.
+    Args:
+        content: HTML content to translate
+    Returns:
+        str: Translated HTML content
+    """
+    try:
+        soup = BeautifulSoup(content, 'lxml')
+        for text_node in soup.find_all(string=True):
+            if text := text_node.strip():
+                translated_text = translate_text(
+                    text,
+                    source_lang="French",
+                    target_lang="Simple Chinese"
+                )
+                log.debug(f"Translated: {text} -> {translated_text}")
+                text_node.replace_with(translated_text)
+        return soup.prettify()
+    except Exception as e:
+        log.error(f"Translation error: {e}")
+        return content
 
 
 if __name__ == "__main__":
-    # fetch_rss()
-    # dump_rss("lapresse.json")
-    # # get last entry content and save to html
-    # entry = get_last_entries()
-    # content = get_entry_content(entry)
-    # if content:
-    #     ut.dump_file(content, "lapresse.html")
-    # print("done")
+    try:
+        fetch_rss()
+        ut.dump_json(rss, "lapresse.json")
 
-    rss = ut.load_json("lapresse.json")
-    entry = rss["entries"][0]
-    content = get_entry_content(entry)
-    ut.dump_file(content, "lapresse.html")
-    text = get_readability(content)
-    ut.dump_file(text, "parsed_lapresse.html")
-    telegraph_content = prepare_telegraph_content(text)
-    ut.dump_file(telegraph_content, "telegraph.html")
-    translated_text = translate_content(telegraph_content)
-    title = translate_text(
-        entry["title"], source_lang="French", target_lang="Simple Chinese")
-    ut.dump_file(translated_text, "translated_telegraph.html")
-    url = create_telegraph_page(title, translated_text)
+        if entry := get_last_entries():
+            if content := get_entry_content(entry):
+                ut.dump_file(content, "lapresse.html")
+                text = get_readability(content)
+                ut.dump_file(text, "parsed_lapresse.html")
+                telegraph_content = prepare_telegraph_content(text)
+                ut.dump_file(telegraph_content, "telegraph.html")
+                translated_text = translate_content(telegraph_content)
+                title = translate_text(
+                    entry["title"],
+                    source_lang="French",
+                    target_lang="Simple Chinese"
+                )
+                ut.dump_file(translated_text, "translated_telegraph.html")
+                url = create_telegraph_page(title, translated_text)
+                print(f"Successfully created page: {url}")
+    except Exception as e:
+        log.error(f"Process failed: {e}")
