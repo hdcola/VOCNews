@@ -11,6 +11,11 @@ This project will complete a news site like this one for Chinese people, it will
   - Telegram Bot: Monitor the operation of the system
 - Back end: Nodejs
   - Python: News crawling, content analysis, translation, publishing
+  - requests: Get news list from RSS
+  - feedparser: Parse RSS
+  - BeautifulSoup: Extract news content
+  - lxml: Parse HTML
+  - lxml-html-clean: Clean HTML
 - Cloud service: Cloudflare Pages, Cloudflare Images, Cloudflare Function
   - MongoDB: Store news list
   - Doppler: Store environment variables and secrets
@@ -19,6 +24,7 @@ This project will complete a news site like this one for Chinese people, it will
 - CI/CD: React Testing Library, jest
   - pytest: Test the Python code 
   - GitHub Actions: CI
+  - PDM: Python package management
 
 ## Special features
 
