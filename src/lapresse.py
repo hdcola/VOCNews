@@ -1,4 +1,4 @@
-from typing import Optional, Dict, List
+from typing import Optional, Dict
 import feedparser
 import utils as ut
 import requests
@@ -9,6 +9,7 @@ from lxml.html.clean import Cleaner
 from lxml import html
 from telegraph import Telegraph
 from translate import translate_text
+import rssutils
 
 log = logger.getChild(__name__)
 
@@ -44,17 +45,6 @@ def fetch_rss() -> None:
             "link": entry.link,
             "image": entry.links[0].href
         })
-
-
-def get_last_entries() -> Optional[Dict]:
-    """
-    Returns the most recent entry from the RSS feed.
-    Returns None if no entries exist.
-    """
-    if len(rss["entries"]) == 0:
-        return None
-    rss["entries"].sort(key=lambda x: x["published"], reverse=False)
-    return rss["entries"][-1]
 
 
 def get_entry_content(entry: Dict) -> Optional[str]:
@@ -215,7 +205,7 @@ if __name__ == "__main__":
         fetch_rss()
         ut.dump_json(rss, "lapresse.json")
 
-        if entry := get_last_entries():
+        if entry := rssutils.get_last_entries(rss):
             if content := get_entry_content(entry):
                 ut.dump_file(content, "lapresse.html")
                 text = get_readability(content)
