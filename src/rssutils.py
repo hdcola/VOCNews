@@ -11,6 +11,8 @@ def get_last_entries(rss) -> Optional[Dict]:
     Returns:
         Optional[Dict]: Most recent entry or None if empty
     """
+    if not rss:
+        return None
     entries = rss.get("entries", [])
     entries.sort(key=lambda x: x["published"], reverse=False)
     return entries[-1] if entries else None

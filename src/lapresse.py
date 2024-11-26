@@ -21,19 +21,20 @@ DATE_FORMAT = "%a, %d %b %Y %H:%M:%S %z"
 
 telegraph = Telegraph(access_token=TELEGRAPH_TOKEN)
 
-rss = {
-    "name": NAME,
-    "url": RSS_URL,
-    "entries": []
-}
-
 
 def fetch_rss() -> None:
     """
     Fetches RSS feed entries from LaPresse and stores them in the rss dictionary.
     Each entry contains title, published date, summary, link and image.
     """
+    rss = {
+        "name": NAME,
+        "url": RSS_URL,
+        "entries": []
+    }
+
     feed = feedparser.parse(RSS_URL)
+
     for entry in feed.entries:
         # "Sat, 23 Nov 2024 14:13:45 -0500" to datatime
         published = datetime.strptime(entry.published, DATE_FORMAT).isoformat()
@@ -45,6 +46,7 @@ def fetch_rss() -> None:
             "link": entry.link,
             "image": entry.links[0].href
         })
+    return rss
 
 
 def get_entry_content(entry: Dict) -> Optional[str]:
@@ -202,7 +204,7 @@ def translate_content(content: str) -> str:
 
 if __name__ == "__main__":
     try:
-        fetch_rss()
+        rss = fetch_rss()
         ut.dump_json(rss, "lapresse.json")
 
         if entry := rssutils.get_last_entries(rss):

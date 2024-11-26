@@ -12,43 +12,36 @@ db = client["vocnews"]
 collection = db["rss"]
 
 
-def insert_one(data: Dict[str, Any]) -> Any:
+def get_last_rss(name: str) -> Dict[str, Any]:
     """
-    Insert a single document into the collection.
+    Get the last RSS feed entry for a given source name.
 
     Args:
-        data: Dictionary containing the document to insert
+        name: Name of the RSS feed source
+
+    Returns:
+        Dictionary containing the last RSS feed entry
+    """
+    log.debug(f"Getting last RSS entry for source: {name}")
+    return collection.find_one({"name": name})
+
+
+def save_rss(rss: Dict[str, Any]) -> Any:
+    """
+    Save the RSS feed data for a given source name.
+
+    Args:
+        name: Name of the RSS feed source
+        rss: Dictionary containing the RSS feed data
 
     Returns:
         InsertOneResult object containing the inserted_id
     """
-    log.debug(f"Inserting document: {data}")
-    return collection.insert_one(data)
+    name = rss["name"]
+    log.debug(f"Saving RSS feed for source: {name}")
 
-
-def update_one(query: Dict[str, Any]) -> Any:
-    """
-    Update a single document in the collection.
-
-    Args:
-        query: Dictionary containing the update query
-
-    Returns:
-        UpdateResult object containing the update result
-    """
-    log.debug(f"Updating document with query: {query}")
-    return collection.update_one(query)
-
-
-def find_one(query: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Find a single document in the collection.
-
-    Args:
-        query: Dictionary containing the search criteria
-
-    Returns:
-        The found document or None if not found
-    """
-    log.debug(f"Finding document with query: {query}")
-    return collection.find_one(query)
+    return collection.replace_one(
+        {"name": name},  # search criteria
+        rss,  # replacement document
+        upsert=True  # if document not found, insert it
+    )
