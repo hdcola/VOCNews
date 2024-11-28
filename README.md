@@ -33,7 +33,7 @@ This project will complete a news site like this one for Chinese people, it will
 - [x] Analyzing news content and extracting reading views through crawlers
 - [x] Translate news content into Chinese with OpenAI or Ollama's local LLM
 - [x] Convert HTML to Telegraph format and publish to Telegraph
-- [ ] Publish news to the Telegram channel
+- [x] Publish news to the Telegram channel
 - [ ] Fully automated updating and operation
 - [ ] Share to social media can be friendly to display content
 - [ ] Automatic posting to websites and Telegram channels
