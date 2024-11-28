@@ -159,7 +159,7 @@ def prepare_telegraph_content(html_content: str) -> str:
             h1.decompose()
 
     # remove elements but keep content
-    for element in soup.find_all(['div', 'section', 'article', 'header', 'small', 'source', 'time']):
+    for element in soup.find_all(['div', 'section', 'article', 'header', 'small', 'source', 'time', 'sup']):
         element.unwrap()
 
     # replace h1 to h3
