@@ -26,6 +26,29 @@ This project will complete a news site like this one for Chinese people, it will
   - GitHub Actions: CI
   - PDM: Python package management
 
+## Installation
+
+### News Feed Service
+
+#### Setup Environment
+
+The following instructions are based on Debian 12, and other systems may vary. Please check your system version via `/etc/os-release`.
+
+##### Instlal PDM
+
+```bash
+sudo apt install python3-pdm
+```
+
+##### Install ollama and pull the model
+
+```bash
+curl -fsSL https://ollama.com/install.sh | sh
+ollama pull qwen2:7b-instruct
+```
+
+
+
 ## Special features
 
 - [x] Get news list from RSS
