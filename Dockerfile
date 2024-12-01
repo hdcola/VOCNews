@@ -21,13 +21,12 @@ COPY src/ /project/src
 WORKDIR /project
 RUN pdm install --check --prod --no-editable
 
-
-
 # Runing
 FROM python:$PYTHON_BASE
 
 # From building stage copy the virtual environment
 COPY --from=builder /project/.venv/ /project/.venv
+COPY --from=builder /usr/bin/doppler /usr/bin/doppler
 ENV PATH="/project/.venv/bin:$PATH"
 COPY src /project/src
 CMD ["doppler", "run", "--", "/project/.venv/bin/python", "/project/src/feedrss.py"]
