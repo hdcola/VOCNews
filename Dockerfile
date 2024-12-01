@@ -27,5 +27,4 @@ FROM python:$PYTHON_BASE
 COPY --from=builder /project/.venv/ /project/.venv
 ENV PATH="/project/.venv/bin:$PATH"
 COPY src /project/src
-ENTRYPOINT ["doppler", "run", "--"]
-CMD ["/project/.venv/bin/python", "/project/src/feedrss.py"]
+CMD ["doppler", "run", "--", "/project/.venv/bin/python", "/project/src/feedrss.py"]
