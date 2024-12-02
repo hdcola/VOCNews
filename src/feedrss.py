@@ -43,7 +43,7 @@ async def process_entry(entity):
     )
 
 
-def main() -> None:
+async def main() -> None:
     """Main execution function to fetch and store RSS feed data."""
     try:
 
@@ -59,7 +59,7 @@ def main() -> None:
             for entity in entities:
                 log.info(f"Processing: {
                          entity['published']}-{entity['title']} \n {entity['link']} \n {entity['image']}")
-                asyncio.run(process_entry(entity))
+                await process_entry(entity)
         else:
             log.info("No new entries found")
 
@@ -69,4 +69,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

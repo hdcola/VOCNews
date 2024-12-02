@@ -7,7 +7,7 @@ This project will complete a news site like this one for Chinese people, it will
 ## Technologies used
 
 - Front end: Gatsby, React, Tailwindcss
-  - Telegram: Share news to the Telegram channel
+  - Telegram Channel: User can subscribe to the channel to get the latest news
   - Telegram Bot: Monitor the operation of the system
 - Back end: Nodejs
   - Python: News crawling, content analysis, translation, publishing
@@ -19,11 +19,12 @@ This project will complete a news site like this one for Chinese people, it will
 - Cloud service: Cloudflare Pages, Cloudflare Images, Cloudflare Function
   - MongoDB: Store news list
   - Doppler: Store environment variables and secrets
-  - OpenAI or Ollama: use GPT 3.5 or QWen2 7b to translate news content
+  - OpenAI/Ollama: use GPT 3.5 or QWen2 7b to translate news content
   - Telegraph: Publish news content
+  - Docker & Enroot: Run the service
 - CI/CD: React Testing Library, jest
   - pytest: Test the Python code 
-  - GitHub Actions: CI
+  - GitHub Actions: CI and CD
   - PDM: Python package management
 
 ## Installation
@@ -47,6 +48,36 @@ curl -fsSL https://ollama.com/install.sh | sh
 ollama pull qwen2:7b-instruct
 ```
 
+##### Install enroot
+
+```bash
+arch=$(dpkg --print-architecture)
+curl -fSsL -O https://github.com/NVIDIA/enroot/releases/download/v3.5.0/enroot_3.5.0-1_${arch}.deb
+curl -fSsL -O https://github.com/NVIDIA/enroot/releases/download/v3.5.0/enroot+caps_3.5.0-1_${arch}.deb # optional
+sudo apt install -y ./*.deb
+```
+
+##### Install VOCNews
+
+```bash
+rm *.sqsh
+enroot import docker://ghcr.io#hdcola/vocnews:latest
+enroot create -f --name vocnews hdcola+vocnews+latest.sqsh
+```
+
+##### Start VOCNews
+
+```bash
+enroot start -e DOPPLER_TOKEN=your_doppler_token -m host_dir:/home/yourname vocnews
+```
+
+If you want to enter the container, you can use the following command:
+
+```bash
+enroot start vocnews /bin/bash
+```
+
+#####
 
 
 ## Special features
@@ -57,7 +88,7 @@ ollama pull qwen2:7b-instruct
 - [x] Translate news content into Chinese with OpenAI or Ollama's local LLM
 - [x] Convert HTML to Telegraph format and publish to Telegraph
 - [x] Publish news to the Telegram channel
-- [ ] Fully automated updating and operation
+- [x] Fully automated updating and operation
 - [ ] Share to social media can be friendly to display content
 - [ ] Automatic posting to websites and Telegram channels
 - [ ] Telegram Bot allows you to monitor the operation of your system
