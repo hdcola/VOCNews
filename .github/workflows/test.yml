@@ -5,7 +5,7 @@ name: Test with Python 3.12
 
 on:
   push:
-    branches: ['main']
+    branches: ['hddev']
   pull_request:
     branches: ['main']
 
