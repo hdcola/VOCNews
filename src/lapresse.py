@@ -158,9 +158,15 @@ def prepare_telegraph_content(html_content: str) -> str:
         if h1:
             h1.decompose()
 
-    # remove elements but keep content
-    for element in soup.find_all(['div', 'section', 'article', 'header', 'small', 'source', 'time', 'sup']):
-        element.unwrap()
+    # Define Telegraph allowed tags
+    allowed_tags = {'a', 'aside', 'b', 'blockquote', 'br', 'code', 'em',
+                    'figcaption', 'figure', 'h3', 'h4', 'hr', 'i', 'iframe',
+                    'img', 'li', 'ol', 'p', 'pre', 's', 'strong', 'u', 'ul', 'video', 'body'}
+
+    # Unwrap any tags that aren't allowed by Telegraph
+    for element in soup.find_all():
+        if element.name not in allowed_tags:
+            element.unwrap()
 
     # replace h1 to h3
     for h1 in soup.find_all('h1'):

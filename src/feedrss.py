@@ -51,6 +51,8 @@ def main() -> None:
         lastrss = db.get_last_rss(lp.NAME)
 
         entities = rssutils.get_new_entries(newrss, lastrss)
+        if ut.ENV.get("SEND_LAST", "false") == "true":
+            entities = newrss["entries"][0:1]
         if entities:
             log.info(f"New entries found: {len(entities)}")
             db.save_rss(newrss)
