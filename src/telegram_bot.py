@@ -6,9 +6,8 @@ import asyncio
 
 log = logger.getChild(__name__)
 bot_token = ut.ENV.get("TELEGRAM_BOT_TOKEN", "")
-chat_id = ut.ENV.get("TELEGRAM_CHAT_ID", "")
+chat_ids = ut.ENV.get("TELEGRAM_CHAT_ID", "")
 
-# 全局应用实例
 application = ApplicationBuilder().token(token=bot_token).build()
 
 
@@ -35,13 +34,16 @@ async def send_new(entry: dict, title: str, summary: str, link: str) -> bool:
 
 <b>新闻详情:<a href='{link}'>点击这里</a> | <a href='{entry['link']}'>原文链接</a></b>"""
 
-        await application.bot.send_photo(
-            chat_id=chat_id,
-            photo=entry["image"],
-            caption=caption[:1024],  # Telegram caption length limit
-            parse_mode="HTML"
-        )
-        log.info(f"Message sent successfully: {title}")
+        chats = chat_ids.split(",")
+        log.debug(f"Sending message to chat IDs: {chats}")
+        for chat_id in chats:
+            await application.bot.send_photo(
+                chat_id=chat_id,
+                photo=entry["image"],
+                caption=caption[:1024],  # Telegram caption length limit
+                parse_mode="HTML"
+            )
+            log.info(f"Message sent successfully: {title}")
         return True
 
     except Exception as e:
