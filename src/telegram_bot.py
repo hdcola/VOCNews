@@ -32,7 +32,7 @@ async def send_new(entry: dict, title: str, summary: str, link: str) -> bool:
         caption = f"""<a href='{link}'>{title}</a>
 {summary}
 
-<b>新闻详情:<a href='{link}'>点击这里</a> | <a href='{entry['link']}'>原文链接</a></b>"""
+<b>新闻详情:<a href='{link}'>点击这里</a> | <a href='{entry['link']}'>原文</a></b>"""
 
         chats = chat_ids.split(",")
         log.debug(f"Sending message to chat IDs: {chats}")
